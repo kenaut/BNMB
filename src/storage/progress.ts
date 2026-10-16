@@ -32,8 +32,14 @@ export interface RecentResult {
   elapsedMs: number;
 }
 
+/** 个人资料（仅本地，不含任何敏感信息） */
+export interface Profile {
+  nickname: string;
+}
+
 export interface UserProgress {
   version: number;
+  profile: Profile;
   totalQuestions: number;
   correctAnswers: number;
   totalSessions: number;
@@ -53,6 +59,7 @@ export const MAX_RECENT_RESULTS = 50;
 export function createDefaultProgress(): UserProgress {
   return {
     version: PROGRESS_VERSION,
+    profile: { nickname: "学习者" },
     totalQuestions: 0,
     correctAnswers: 0,
     totalSessions: 0,
@@ -112,6 +119,12 @@ export function sanitizeProgress(raw: unknown): UserProgress | null {
 
   return {
     version: PROGRESS_VERSION,
+    profile: {
+      nickname:
+        isRecord(raw.profile) && typeof raw.profile.nickname === "string"
+          ? raw.profile.nickname.slice(0, 24)
+          : "学习者",
+    },
     totalQuestions: num(raw.totalQuestions),
     correctAnswers: num(raw.correctAnswers),
     totalSessions: num(raw.totalSessions),

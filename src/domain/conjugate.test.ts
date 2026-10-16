@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conjugate, conjugateAll, PHASE1_FORMS } from "./conjugate";
+import { ALL_FORMS, conjugate, conjugateAll, CONJUGATABLE_FORMS } from "./conjugate";
 import type { Verb, VerbType } from "./types";
 
 /** 测试辅助：快速构造 Verb */
@@ -107,31 +107,115 @@ describe("一段动词", () => {
 });
 
 describe("サ变动词（する）", () => {
-  it("する：します / しない / して / した", () => {
+  it("する：全部 12 种形态", () => {
     expect(conjugateAll(v("する", "する", "suru"))).toEqual({
+      dictionary: { kanji: "する", kana: "する" },
       masu: { kanji: "します", kana: "します" },
       nai: { kanji: "しない", kana: "しない" },
       te: { kanji: "して", kana: "して" },
       ta: { kanji: "した", kana: "した" },
+      potential: { kanji: "できる", kana: "できる" },
+      volitional: { kanji: "しよう", kana: "しよう" },
+      imperative: { kanji: "しろ", kana: "しろ" },
+      conditional: { kanji: "すれば", kana: "すれば" },
+      passive: { kanji: "される", kana: "される" },
+      causative: { kanji: "させる", kana: "させる" },
+      causative_passive: { kanji: "させられる", kana: "させられる" },
     });
   });
 
-  it("勉強する（名词+する 复合）：勉強します / べんきょうします", () => {
+  it("勉強する（名词+する 复合）：可能形是「勉強できる」", () => {
     const benkyou = v("勉強する", "べんきょうする", "suru");
     expect(conjugate(benkyou, "masu")).toEqual({ kanji: "勉強します", kana: "べんきょうします" });
     expect(conjugate(benkyou, "nai")).toEqual({ kanji: "勉強しない", kana: "べんきょうしない" });
     expect(conjugate(benkyou, "te")).toEqual({ kanji: "勉強して", kana: "べんきょうして" });
     expect(conjugate(benkyou, "ta")).toEqual({ kanji: "勉強した", kana: "べんきょうした" });
+    expect(conjugate(benkyou, "potential")).toEqual({ kanji: "勉強できる", kana: "べんきょうできる" });
+    expect(conjugate(benkyou, "volitional")).toEqual({ kanji: "勉強しよう", kana: "べんきょうしよう" });
+    expect(conjugate(benkyou, "imperative")).toEqual({ kanji: "勉強しろ", kana: "べんきょうしろ" });
+    expect(conjugate(benkyou, "conditional")).toEqual({ kanji: "勉強すれば", kana: "べんきょうすれば" });
+    expect(conjugate(benkyou, "passive")).toEqual({ kanji: "勉強される", kana: "べんきょうされる" });
+    expect(conjugate(benkyou, "causative")).toEqual({ kanji: "勉強させる", kana: "べんきょうさせる" });
+    expect(conjugate(benkyou, "causative_passive")).toEqual({
+      kanji: "勉強させられる",
+      kana: "べんきょうさせられる",
+    });
   });
 });
 
 describe("カ变动词（来る）", () => {
-  it("来る：汉字与读音变化不一致（きます=来ます / こない=来ない）", () => {
+  it("来る：全部 12 种形态（汉字与读音变化不一致）", () => {
     expect(conjugateAll(v("来る", "くる", "kuru"))).toEqual({
+      dictionary: { kanji: "来る", kana: "くる" },
       masu: { kanji: "来ます", kana: "きます" },
       nai: { kanji: "来ない", kana: "こない" },
       te: { kanji: "来て", kana: "きて" },
       ta: { kanji: "来た", kana: "きた" },
+      potential: { kanji: "来られる", kana: "こられる" },
+      volitional: { kanji: "来よう", kana: "こよう" },
+      imperative: { kanji: "来い", kana: "こい" },
+      conditional: { kanji: "来れば", kana: "くれば" },
+      passive: { kanji: "来られる", kana: "こられる" },
+      causative: { kanji: "来させる", kana: "こさせる" },
+      causative_passive: { kanji: "来させられる", kana: "こさせられる" },
+    });
+  });
+});
+
+describe("扩展形态：可能/意向/命令/条件/受身/使役/使役受身/辞书", () => {
+  it("五段 書く", () => {
+    const kaku = v("書く", "かく", "godan");
+    expect(conjugate(kaku, "dictionary")).toEqual({ kanji: "書く", kana: "かく" });
+    expect(conjugate(kaku, "potential")).toEqual({ kanji: "書ける", kana: "かける" });
+    expect(conjugate(kaku, "volitional")).toEqual({ kanji: "書こう", kana: "かこう" });
+    expect(conjugate(kaku, "imperative")).toEqual({ kanji: "書け", kana: "かけ" });
+    expect(conjugate(kaku, "conditional")).toEqual({ kanji: "書けば", kana: "かけば" });
+    expect(conjugate(kaku, "passive")).toEqual({ kanji: "書かれる", kana: "かかれる" });
+    expect(conjugate(kaku, "causative")).toEqual({ kanji: "書かせる", kana: "かかせる" });
+    expect(conjugate(kaku, "causative_passive")).toEqual({
+      kanji: "書かせられる",
+      kana: "かかせられる",
+    });
+  });
+
+  it("五段う结尾 買う：未然形是 わ 行（買われる/買わせる）", () => {
+    const kau = v("買う", "かう", "godan");
+    expect(conjugate(kau, "potential").kanji).toBe("買える");
+    expect(conjugate(kau, "volitional").kanji).toBe("買おう");
+    expect(conjugate(kau, "passive").kanji).toBe("買われる");
+    expect(conjugate(kau, "causative").kanji).toBe("買わせる");
+  });
+
+  it("一段 食べる", () => {
+    const taberu = v("食べる", "たべる", "ichidan");
+    expect(conjugate(taberu, "dictionary")).toEqual({ kanji: "食べる", kana: "たべる" });
+    expect(conjugate(taberu, "potential")).toEqual({ kanji: "食べられる", kana: "たべられる" });
+    expect(conjugate(taberu, "volitional")).toEqual({ kanji: "食べよう", kana: "たべよう" });
+    expect(conjugate(taberu, "imperative")).toEqual({ kanji: "食べろ", kana: "たべろ" });
+    expect(conjugate(taberu, "conditional")).toEqual({ kanji: "食べれば", kana: "たべれば" });
+    expect(conjugate(taberu, "passive")).toEqual({ kanji: "食べられる", kana: "たべられる" });
+    expect(conjugate(taberu, "causative")).toEqual({ kanji: "食べさせる", kana: "たべさせる" });
+    expect(conjugate(taberu, "causative_passive")).toEqual({
+      kanji: "食べさせられる",
+      kana: "たべさせられる",
+    });
+  });
+
+  it("行く：扩展形态按规则变化（行ける/行こう/行け/行けば/行かれる/行かせる）", () => {
+    const iku = v("行く", "いく", "godan");
+    expect(conjugate(iku, "potential").kanji).toBe("行ける");
+    expect(conjugate(iku, "volitional").kanji).toBe("行こう");
+    expect(conjugate(iku, "imperative").kanji).toBe("行け");
+    expect(conjugate(iku, "conditional").kanji).toBe("行けば");
+    expect(conjugate(iku, "passive").kanji).toBe("行かれる");
+    expect(conjugate(iku, "causative").kanji).toBe("行かせる");
+    expect(conjugate(iku, "causative_passive").kanji).toBe("行かせられる");
+  });
+
+  it("ある：可能形是「ありえる」，而非「あれる」", () => {
+    expect(conjugate(v("ある", "ある", "godan"), "potential")).toEqual({
+      kanji: "ありえる",
+      kana: "ありえる",
     });
   });
 });
@@ -141,7 +225,9 @@ describe("错误处理与常量", () => {
     expect(() => conjugate(v("x", "x", "godan"), "masu")).toThrow(/五段词尾/);
   });
 
-  it("第一阶段恰好包含 ます/ない/て/た 四种形态", () => {
-    expect(PHASE1_FORMS).toEqual(["masu", "nai", "te", "ta"]);
+  it("共 12 种形态：1 辞书形 + 11 活用形", () => {
+    expect(ALL_FORMS).toHaveLength(12);
+    expect(CONJUGATABLE_FORMS).toHaveLength(11);
+    expect(CONJUGATABLE_FORMS).not.toContain("dictionary");
   });
 });

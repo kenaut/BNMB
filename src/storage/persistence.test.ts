@@ -48,8 +48,16 @@ describe("loadProgress 异常降级", () => {
     });
     const p = loadProgress(s);
     expect(p.totalQuestions).toBe(42);
+    expect(p.profile).toEqual({ nickname: "学习者" });
     expect(p.streak).toEqual({ current: 0, longest: 0, lastStudyDate: null });
     expect(p.recentResults).toEqual([]);
+  });
+
+  it("旧存档无 profile 字段 → 自动补默认昵称；已有昵称保留", () => {
+    const s = fakeStorage({
+      [STORAGE_KEY]: JSON.stringify({ version: PROGRESS_VERSION, profile: { nickname: "タロウ" } }),
+    });
+    expect(loadProgress(s).profile.nickname).toBe("タロウ");
   });
 
   it("version 不兼容 → 默认数据", () => {

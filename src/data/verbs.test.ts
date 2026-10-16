@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conjugate, PHASE1_FORMS } from "../domain/conjugate";
+import { conjugate, ALL_FORMS } from "../domain/conjugate";
 import { verbs } from "./verbs";
 
 describe("verbs.json 数据完整性", () => {
@@ -42,9 +42,9 @@ describe("verbs.json 数据完整性", () => {
     }
   });
 
-  it("库中每个动词在第一阶段所有形态下都能无错活用", () => {
+  it("库中每个动词在全部 12 种形态下都能无错活用", () => {
     for (const v of verbs) {
-      for (const form of PHASE1_FORMS) {
+      for (const form of ALL_FORMS) {
         const result = conjugate(v, form);
         expect(result.kanji.length).toBeGreaterThan(0);
         expect(result.kana.length).toBeGreaterThan(0);

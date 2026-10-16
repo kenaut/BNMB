@@ -10,12 +10,23 @@ export type VerbType =
   | "kuru"; // カ变动词：来る（日语中仅此一个）
 
 /**
- * 活用形 ID。
- * 第一阶段仅实现 4 种；后续按此枚举扩展：
- * potential(可能) / volitional(意向) / imperative(命令) / conditional(条件)
- * passive(受身) / causative(使役) / causativePassive(使役受身) 等。
+ * 活用形 ID（共 12 种）。
+ * dictionary 为辞书形（原形），conjugate(verb, "dictionary") 原样返回动词本身；
+ * 其余 11 种为活用形。
  */
-export type FormId = "masu" | "nai" | "te" | "ta";
+export type FormId =
+  | "dictionary" // 辞书形（原形）
+  | "masu" // ます形
+  | "nai" // ない形
+  | "te" // て形
+  | "ta" // た形
+  | "potential" // 可能形（書ける）
+  | "volitional" // 意向形（書こう）
+  | "imperative" // 命令形（書け）
+  | "conditional" // 条件形・ば形（書けば）
+  | "passive" // 受身形（書かれる）
+  | "causative" // 使役形（書かせる）
+  | "causative_passive"; // 使役受身形（書かせられる）
 
 /** verbs.json 中单个动词的数据结构 */
 export interface Verb {

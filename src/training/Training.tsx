@@ -1,5 +1,6 @@
 import { useState } from "react";
 import HomeScreen from "../components/HomeScreen";
+import ProfileCard from "../components/ProfileCard";
 import Quiz from "../components/Quiz";
 import ResultScreen from "../components/ResultScreen";
 import StatsScreen from "../components/StatsScreen";
@@ -42,6 +43,7 @@ export default function Training() {
       // 主页 = 训练入口 + 学习进度（完成回合返回时 StatsScreen 重新挂载并载入最新历史）
       return (
         <div style={{ display: "grid", gap: 16 }}>
+          <ProfileCard />
           <HomeScreen
             total={session.state.total}
             onStart={() => session.start()}

@@ -1,10 +1,24 @@
 import { useState } from "react";
+import { verbs } from "../data/verbs";
 import { createQuestion, type Question } from "../quiz/quiz";
+import { loadProgress } from "../storage/persistence";
+import { getUnlockedForms } from "../training/mastery";
 import QuestionCard from "./QuestionCard";
+
+/** 自由练习：全部动词 + 已解锁形态，混合题型与方向 */
+function nextQuestion(): Question {
+  return createQuestion(
+    verbs,
+    getUnlockedForms(loadProgress()),
+    Math.random,
+    Math.random() < 0.5 ? "choice" : "input",
+    Math.random() < 0.5 ? "reverse" : "forward",
+  );
+}
 
 /** 自由练习（不计分、不限题数）：原有功能，改为复用 QuestionCard */
 export default function Quiz({ onBack }: { onBack?: () => void }) {
-  const [question, setQuestion] = useState<Question>(() => createQuestion());
+  const [question, setQuestion] = useState<Question>(() => nextQuestion());
 
   return (
     <div>
@@ -25,9 +39,9 @@ export default function Quiz({ onBack }: { onBack?: () => void }) {
         </button>
       )}
       <QuestionCard
-        key={`${question.verb.id}-${question.form}`}
+        key={`${question.verb.id}-${question.form}-${question.direction}-${question.kind}`}
         question={question}
-        onContinue={() => setQuestion(createQuestion())}
+        onContinue={() => setQuestion(nextQuestion())}
       />
     </div>
   );

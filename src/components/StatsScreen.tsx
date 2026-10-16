@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FORM_LABELS, PHASE1_FORMS } from "../domain/conjugate";
+import { CONJUGATABLE_FORMS, FORM_LABELS } from "../domain/conjugate";
 import { verbs } from "../data/verbs";
 import { loadProgress } from "../storage/persistence";
 import type { UserProgress } from "../storage/progress";
@@ -17,7 +17,7 @@ export default function StatsScreen() {
   const accuracy = progress.totalQuestions === 0 ? 0 : progress.correctAnswers / progress.totalQuestions;
   const bestAccuracy = progress.recentResults.reduce((m, r) => Math.max(m, r.accuracy), 0);
 
-  const formStats = PHASE1_FORMS.map((f) => ({
+  const formStats = CONJUGATABLE_FORMS.map((f) => ({
     key: f as string,
     label: FORM_LABELS[f],
     ...(progress.forms[f as string] ?? { attempts: 0, correct: 0 }),
@@ -53,8 +53,8 @@ export default function StatsScreen() {
           <StatBox label="最佳单局" value={formatPercent(bestAccuracy)} />
           <StatBox label="累计用时" value={formatClock(progress.totalElapsedMs)} />
           <StatBox
-            label="连续学习"
-            value={`${progress.streak.current} 天`}
+            label="火花连胜"
+            value={`🔥 ${progress.streak.current} 天`}
             sub={`最长 ${progress.streak.longest} 天`}
           />
         </div>

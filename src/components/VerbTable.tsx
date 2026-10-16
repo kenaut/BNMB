@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { conjugate, FORM_LABELS, PHASE1_FORMS, VERB_TYPE_LABELS } from "../domain/conjugate";
+import { conjugate, CONJUGATABLE_FORMS, FORM_LABELS, VERB_TYPE_LABELS } from "../domain/conjugate";
 import { verbs } from "../data/verbs";
 import RubyText from "./RubyText";
 
@@ -13,7 +13,7 @@ export default function VerbTable() {
           <Th>读音</Th>
           <Th>类型</Th>
           <Th>意思</Th>
-          {PHASE1_FORMS.map((f) => (
+          {CONJUGATABLE_FORMS.map((f) => (
             <Th key={f}>{FORM_LABELS[f]}</Th>
           ))}
         </tr>
@@ -27,7 +27,7 @@ export default function VerbTable() {
             <Td>{v.kana}</Td>
             <Td>{VERB_TYPE_LABELS[v.type]}</Td>
             <Td>{v.meaning}</Td>
-            {PHASE1_FORMS.map((f) => {
+            {CONJUGATABLE_FORMS.map((f) => {
               const c = conjugate(v, f);
               return (
                 <Td key={f}>

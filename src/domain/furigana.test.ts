@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conjugate, PHASE1_FORMS } from "./conjugate";
+import { conjugate, ALL_FORMS } from "./conjugate";
 import { formToFurigana, toFurigana } from "./furigana";
 import { verbs } from "../data/verbs";
 
@@ -60,10 +60,10 @@ describe("toFurigana", () => {
   });
 });
 
-describe("全库×第一阶段全部形态：振假名均可自动推导且不丢字", () => {
+describe("全库×全部形态：振假名均可自动推导且不丢字", () => {
   it("每个形态的分段拼回后与原 kanji/kana 一致", () => {
     for (const verb of verbs) {
-      for (const form of PHASE1_FORMS) {
+      for (const form of ALL_FORMS) {
         const result = conjugate(verb, form);
         const segments = toFurigana(result.kanji, result.kana);
         // 拼回汉字表记

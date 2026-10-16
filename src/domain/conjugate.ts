@@ -24,15 +24,38 @@ const GODAN_ROWS = {
 } as const;
 
 type GodanEnding = keyof typeof GODAN_ROWS;
-type GodanBase = keyof (typeof GODAN_ROWS)[GodanEnding];
+type GodanRow = (typeof GODAN_ROWS)[GodanEnding];
 
-/** 第一阶段形态 → 五段词尾所在行 */
-const GODAN_FORM_BASE: Record<FormId, GodanBase> = {
-  masu: "i",
-  nai: "a",
-  te: "te",
-  ta: "ta",
-};
+/** 辞书形以外的活用形（辞书形不需要活用，conjugate 中直接返回动词本身） */
+export type ConjugatableFormId = Exclude<FormId, "dictionary">;
+
+/** 五段动词各形态的词尾构造（基于音变表的 a/i/e/o/te/ta 行） */
+function godanSuffix(row: GodanRow, form: ConjugatableFormId): string {
+  switch (form) {
+    case "masu":
+      return row.i + "ます";
+    case "nai":
+      return row.a + "ない";
+    case "te":
+      return row.te;
+    case "ta":
+      return row.ta;
+    case "potential":
+      return row.e + "る";
+    case "volitional":
+      return row.o + "う";
+    case "imperative":
+      return row.e;
+    case "conditional":
+      return row.e + "ば";
+    case "passive":
+      return row.a + "れる";
+    case "causative":
+      return row.a + "せる";
+    case "causative_passive":
+      return row.a + "せられる";
+  }
+}
 
 /**
  * 五段动词的特殊变化（按辞书形假名 kana 匹配）。
@@ -44,48 +67,96 @@ const GODAN_EXCEPTIONS: Record<string, Partial<Record<FormId, ConjugatedForm>>> 
     te: { kanji: "行って", kana: "いって" },
     ta: { kanji: "行った", kana: "いった" },
   },
-  // ある：ない形是「ない」，而非「あらない」
+  // ある：ない形是「ない」，而非「あらない」；可能形是「ありえる」，而非「あれる」
   ある: {
     nai: { kanji: "ない", kana: "ない" },
+    potential: { kanji: "ありえる", kana: "ありえる" },
   },
 };
 
 /** 一段动词：去掉词尾「る」后直接接后缀 */
-const ICHIDAN_SUFFIX: Record<FormId, string> = {
+const ICHIDAN_SUFFIX: Record<ConjugatableFormId, string> = {
   masu: "ます",
   nai: "ない",
   te: "て",
   ta: "た",
+  potential: "られる",
+  volitional: "よう",
+  imperative: "ろ",
+  conditional: "れば",
+  passive: "られる",
+  causative: "させる",
+  causative_passive: "させられる",
 };
 
-/** サ变动词：把词尾「する」替换为「し～」 */
-const SURU_FORM: Record<FormId, string> = {
+/** サ变动词：把词尾「する」整个替换（可能形 できる 是特殊变化） */
+const SURU_FORM: Record<ConjugatableFormId, string> = {
   masu: "します",
   nai: "しない",
   te: "して",
   ta: "した",
+  potential: "できる",
+  volitional: "しよう",
+  imperative: "しろ",
+  conditional: "すれば",
+  passive: "される",
+  causative: "させる",
+  causative_passive: "させられる",
 };
 
 /**
  * カ变动词「来る」：日语中仅此一个，其汉字与读音变化不一致
  * （きます=来ます / こない=来ない），直接给出完整形态。
  */
-const KURU_FORM: Record<FormId, ConjugatedForm> = {
+const KURU_FORM: Record<ConjugatableFormId, ConjugatedForm> = {
   masu: { kanji: "来ます", kana: "きます" },
   nai: { kanji: "来ない", kana: "こない" },
   te: { kanji: "来て", kana: "きて" },
   ta: { kanji: "来た", kana: "きた" },
+  potential: { kanji: "来られる", kana: "こられる" },
+  volitional: { kanji: "来よう", kana: "こよう" },
+  imperative: { kanji: "来い", kana: "こい" },
+  conditional: { kanji: "来れば", kana: "くれば" },
+  passive: { kanji: "来られる", kana: "こられる" },
+  causative: { kanji: "来させる", kana: "こさせる" },
+  causative_passive: { kanji: "来させられる", kana: "こさせられる" },
 };
 
-/** 第一阶段支持的形态列表（按练习顺序） */
-export const PHASE1_FORMS: readonly FormId[] = ["masu", "nai", "te", "ta"];
+/** 全部 12 种形态（含辞书形） */
+export const ALL_FORMS: readonly FormId[] = [
+  "dictionary",
+  "masu",
+  "nai",
+  "te",
+  "ta",
+  "potential",
+  "volitional",
+  "imperative",
+  "conditional",
+  "passive",
+  "causative",
+  "causative_passive",
+];
+
+/** 11 种活用形（不含辞书形）：出题/统计用 */
+export const CONJUGATABLE_FORMS: readonly ConjugatableFormId[] = ALL_FORMS.filter(
+  (f): f is ConjugatableFormId => f !== "dictionary",
+);
 
 /** 形态的中文标签（UI 展示用） */
 export const FORM_LABELS: Record<FormId, string> = {
+  dictionary: "辞书形",
   masu: "ます形",
   nai: "ない形",
   te: "て形",
   ta: "た形",
+  potential: "可能形",
+  volitional: "意向形",
+  imperative: "命令形",
+  conditional: "条件形",
+  passive: "受身形",
+  causative: "使役形",
+  causative_passive: "使役受身形",
 };
 
 /** 动词类型的中文标签（UI 展示用） */
@@ -104,7 +175,7 @@ function replaceEnding(verb: Verb, drop: number, suffix: string): ConjugatedForm
   };
 }
 
-function conjugateGodan(verb: Verb, form: FormId): ConjugatedForm {
+function conjugateGodan(verb: Verb, form: ConjugatableFormId): ConjugatedForm {
   const exception = GODAN_EXCEPTIONS[verb.kana]?.[form];
   if (exception) return exception;
 
@@ -113,20 +184,19 @@ function conjugateGodan(verb: Verb, form: FormId): ConjugatedForm {
   if (!row) {
     throw new Error(`无法识别的五段词尾「${ending}」（动词: ${verb.kanji} / ${verb.kana}）`);
   }
-
-  const base = GODAN_FORM_BASE[form];
-  const suffix =
-    base === "i" ? row.i + "ます" : base === "a" ? row.a + "ない" : row[base];
-  return replaceEnding(verb, 1, suffix);
+  return replaceEnding(verb, 1, godanSuffix(row, form));
 }
 
 /**
  * 动词活用入口：conjugate(verb, form)。
+ * form 为 "dictionary" 时原样返回动词本身。
  *
  * @example conjugate(食べる, "te") // { kanji: "食べて", kana: "たべて" }
  * @example conjugate(行く, "ta")  // { kanji: "行った", kana: "いった" }
+ * @example conjugate(来る, "potential") // { kanji: "来られる", kana: "こられる" }
  */
 export function conjugate(verb: Verb, form: FormId): ConjugatedForm {
+  if (form === "dictionary") return { kanji: verb.kanji, kana: verb.kana };
   switch (verb.type) {
     case "ichidan":
       return replaceEnding(verb, 1, ICHIDAN_SUFFIX[form]);
@@ -144,12 +214,10 @@ export function conjugate(verb: Verb, form: FormId): ConjugatedForm {
   }
 }
 
-/** 一次性算出某个动词在第一阶段的全部形态 */
+/** 一次性算出某个动词的全部 12 种形态（含辞书形） */
 export function conjugateAll(verb: Verb): Record<FormId, ConjugatedForm> {
-  return {
-    masu: conjugate(verb, "masu"),
-    nai: conjugate(verb, "nai"),
-    te: conjugate(verb, "te"),
-    ta: conjugate(verb, "ta"),
-  };
+  return Object.fromEntries(ALL_FORMS.map((f) => [f, conjugate(verb, f)])) as Record<
+    FormId,
+    ConjugatedForm
+  >;
 }
