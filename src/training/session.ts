@@ -14,6 +14,13 @@
 
 export type SessionPhase = "idle" | "playing" | "finished";
 
+/** 单题答题明细（用于学习分析：分形态正确率、弱项动词） */
+export interface AnswerRecord {
+  verbId: string;
+  form: string;
+  correct: boolean;
+}
+
 export interface SessionState {
   phase: SessionPhase;
   /** 本回合总题数（默认 10） */
@@ -32,6 +39,8 @@ export interface SessionState {
   feedback: boolean;
   /** 当前题的判分结果 */
   lastCorrect: boolean;
+  /** 每题答题明细，与判分顺序一致 */
+  records: AnswerRecord[];
 }
 
 export const DEFAULT_QUESTION_COUNT = 10;
@@ -47,6 +56,7 @@ export function createIdleSession(): SessionState {
     endedAt: null,
     feedback: false,
     lastCorrect: false,
+    records: [],
   };
 }
 
@@ -65,7 +75,12 @@ export function startSession(total: number, now: number): SessionState {
  * 但仍保持 playing + feedback，让用户看到该题反馈；
  * 调用 continueSession 后才切到 finished。
  */
-export function answerSession(state: SessionState, isCorrect: boolean, now: number): SessionState {
+export function answerSession(
+  state: SessionState,
+  isCorrect: boolean,
+  now: number,
+  record?: { verbId: string; form: string },
+): SessionState {
   if (state.phase !== "playing" || state.feedback) return state;
 
   const answered = state.answered + 1;
@@ -79,6 +94,7 @@ export function answerSession(state: SessionState, isCorrect: boolean, now: numb
     feedback: true,
     lastCorrect: isCorrect,
     endedAt: isLast ? now : state.endedAt,
+    records: record ? [...state.records, { ...record, correct: isCorrect }] : state.records,
   };
 }
 
@@ -131,6 +147,8 @@ export interface SessionResult {
   endedAt: number;
   durationMs: number;
   averageMs: number;
+  /** 每题答题明细（分形态/弱项分析的数据来源） */
+  records: AnswerRecord[];
 }
 
 export function getResult(state: SessionState): SessionResult | null {
@@ -146,5 +164,6 @@ export function getResult(state: SessionState): SessionResult | null {
     endedAt: state.endedAt,
     durationMs,
     averageMs: durationMs / state.total,
+    records: state.records,
   };
 }

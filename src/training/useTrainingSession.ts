@@ -1,10 +1,13 @@
 import { useEffect, useReducer, useRef, useState } from "react";
-import { createQuestion, type Question } from "../quiz/quiz";
+import { createQuestions, type Question } from "../quiz/quiz";
+import { loadProgress, saveProgress } from "../storage/persistence";
+import { applySessionResult } from "./progressUpdate";
 import {
   answerSession,
   continueSession,
   createIdleSession,
   getElapsedMs,
+  getResult,
   resetSession,
   startSession,
   DEFAULT_QUESTION_COUNT,
@@ -13,7 +16,7 @@ import {
 
 type Action =
   | { type: "start"; total: number; now: number }
-  | { type: "answer"; isCorrect: boolean; now: number }
+  | { type: "answer"; isCorrect: boolean; now: number; record?: { verbId: string; form: string } }
   | { type: "continue" }
   | { type: "reset" };
 
@@ -22,7 +25,7 @@ function reducer(state: SessionState, action: Action): SessionState {
     case "start":
       return startSession(action.total, action.now);
     case "answer":
-      return answerSession(state, action.isCorrect, action.now);
+      return answerSession(state, action.isCorrect, action.now, action.record);
     case "continue":
       return continueSession(state);
     case "reset":
@@ -58,6 +61,7 @@ export function useTrainingSession(): TrainingSession {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [now, setNow] = useState(() => Date.now());
   const totalRef = useRef(DEFAULT_QUESTION_COUNT);
+  const savedResultAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (state.phase !== "playing") return;
@@ -65,9 +69,19 @@ export function useTrainingSession(): TrainingSession {
     return () => window.clearInterval(timer);
   }, [state.phase]);
 
+  // 回合结束时统一写入本次成绩（每局只写一次；「再来一局」startedAt 不同不会重复累计）
+  useEffect(() => {
+    if (state.phase !== "finished") return;
+    const result = getResult(state);
+    if (!result || savedResultAtRef.current === result.startedAt) return;
+    savedResultAtRef.current = result.startedAt;
+    saveProgress(applySessionResult(loadProgress(), result));
+  }, [state]);
+
   const begin = (total: number) => {
     totalRef.current = total;
-    setQuestions(Array.from({ length: total }, () => createQuestion()));
+    // 全组合洗牌后取前 N：同一回合内「动词 × 形态」不重复
+    setQuestions(createQuestions(total));
     dispatch({ type: "start", total, now: Date.now() });
   };
 
@@ -79,7 +93,15 @@ export function useTrainingSession(): TrainingSession {
     currentQuestion,
     elapsedMs: getElapsedMs(state, now),
     start: (total = DEFAULT_QUESTION_COUNT) => begin(total),
-    answer: (isCorrect) => dispatch({ type: "answer", isCorrect, now: Date.now() }),
+    answer: (isCorrect) =>
+      dispatch({
+        type: "answer",
+        isCorrect,
+        now: Date.now(),
+        record: currentQuestion
+          ? { verbId: currentQuestion.verb.id, form: currentQuestion.form }
+          : undefined,
+      }),
     next: () => dispatch({ type: "continue" }),
     restart: () => begin(totalRef.current),
     home: () => dispatch({ type: "reset" }),

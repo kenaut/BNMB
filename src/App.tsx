@@ -2,10 +2,10 @@ import { useState } from "react";
 import Training from "./training/Training";
 import VerbTable from "./components/VerbTable";
 
-type Tab = "train" | "table";
+type Tab = "home" | "table";
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>("train");
+  const [tab, setTab] = useState<Tab>("home");
 
   return (
     <main className="app-shell">
@@ -13,17 +13,16 @@ export default function App() {
       <p className="subtitle">日语动词活用训练 · 第一阶段（ます形 / ない形 / て形 / た形）</p>
 
       <nav className="tabs" aria-label="主导航">
-        <TabButton active={tab === "train"} onClick={() => setTab("train")}>
-          训练
+        <TabButton active={tab === "home"} onClick={() => setTab("home")}>
+          主页
         </TabButton>
         <TabButton active={tab === "table"} onClick={() => setTab("table")}>
           动词一览
         </TabButton>
       </nav>
 
-      {tab === "train" ? (
-        <Training />
-      ) : (
+      {tab === "home" && <Training />}
+      {tab === "table" && (
         <div className="table-scroll">
           <VerbTable />
         </div>

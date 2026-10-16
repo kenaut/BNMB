@@ -114,4 +114,18 @@ describe("训练回合状态机", () => {
     const s = playFull([true], T0);
     expect(answerSession(s, true, T0 + 9999)).toBe(s);
   });
+
+  it("传入题目信息时逐题记录明细，并随结果导出", () => {
+    let s = startSession(2, T0);
+    s = answerSession(s, true, T0 + 1000, { verbId: "taberu", form: "te" });
+    s = continueSession(s);
+    s = answerSession(s, false, T0 + 2000, { verbId: "kuru", form: "nai" });
+    s = continueSession(s);
+
+    expect(s.records).toEqual([
+      { verbId: "taberu", form: "te", correct: true },
+      { verbId: "kuru", form: "nai", correct: false },
+    ]);
+    expect(getResult(s)!.records).toHaveLength(2);
+  });
 });

@@ -2,6 +2,7 @@ import { useState } from "react";
 import HomeScreen from "../components/HomeScreen";
 import Quiz from "../components/Quiz";
 import ResultScreen from "../components/ResultScreen";
+import StatsScreen from "../components/StatsScreen";
 import TrainingScreen from "../components/TrainingScreen";
 import { getResult } from "./session";
 import { useTrainingSession } from "./useTrainingSession";
@@ -38,12 +39,16 @@ export default function Training() {
     }
     case "idle":
     default:
+      // 主页 = 训练入口 + 学习进度（完成回合返回时 StatsScreen 重新挂载并载入最新历史）
       return (
-        <HomeScreen
-          total={session.state.total}
-          onStart={() => session.start()}
-          onFreePractice={() => setFreePractice(true)}
-        />
+        <div style={{ display: "grid", gap: 16 }}>
+          <HomeScreen
+            total={session.state.total}
+            onStart={() => session.start()}
+            onFreePractice={() => setFreePractice(true)}
+          />
+          <StatsScreen />
+        </div>
       );
   }
 }
