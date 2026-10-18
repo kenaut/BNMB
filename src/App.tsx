@@ -1,8 +1,9 @@
 import { useState } from "react";
+import LearnScreen from "./components/LearnScreen";
 import Training from "./training/Training";
 import VerbTable from "./components/VerbTable";
 
-type Tab = "home" | "table";
+type Tab = "home" | "learn" | "table";
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("home");
@@ -16,12 +17,16 @@ export default function App() {
         <TabButton active={tab === "home"} onClick={() => setTab("home")}>
           主页
         </TabButton>
+        <TabButton active={tab === "learn"} onClick={() => setTab("learn")}>
+          学习
+        </TabButton>
         <TabButton active={tab === "table"} onClick={() => setTab("table")}>
           动词一览
         </TabButton>
       </nav>
 
       {tab === "home" && <Training />}
+      {tab === "learn" && <LearnScreen />}
       {tab === "table" && (
         <div className="table-scroll">
           <VerbTable />
