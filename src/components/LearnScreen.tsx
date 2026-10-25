@@ -220,6 +220,20 @@ export default function LearnScreen() {
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <section style={card}>
+        <h2 style={{ marginTop: 0 }}>配套视频</h2>
+        <div style={{ position: "relative", paddingTop: "56.25%", borderRadius: 6, overflow: "hidden", backgroundColor: "#000" }}>
+          <iframe
+            src="https://player.bilibili.com/player.html?bvid=BV1CRn36oEB2&autoplay=0"
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+            scrolling="no"
+            frameBorder="no"
+            allowFullScreen
+            title="日语动词活用教程视频"
+          />
+        </div>
+      </section>
+
+      <section style={card}>
         <h2 style={{ marginTop: 0 }}>动词三分类</h2>
         <p style={muted}>日语动词按活用规则分为三类。分类决定变形规则，做题前先学会判断类别。</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 12 }}>
