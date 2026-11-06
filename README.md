@@ -1,8 +1,52 @@
-# BNMB
+# BNMB（变にまび）
 
-日语动词变形学习工具
+开源的日语动词活用训练工具，类似多邻国的动词变形练习。纯前端静态应用，无需后端与账号，打开网页即可开始练习。
+
+在线体验：<https://kenaut.github.io/BNMB/>
+
+## 功能特性
+
+- **12 种活用形**：辞书形、ます形、ない形、て形、た形、可能形、意向形、命令形、条件形（ば）、受身形、使役形、使役受身形
+- **完整动词分类支持**：五段动词、一段动词、サ变（する）、カ变（来る），以及 行く／ある 等不规则变化
+- **双向出题**：正向（辞书形 → 目标活用形）与逆向（活用形 → 还原辞书形）
+- **两种题型**：填空题（支持汉字／假名作答，兼容日语 IME 输入）与四选一选择题（干扰项优先取同一动词的其他形态）
+- **形态分批解锁**：初始开放 ます・ない・て・た 四形；某形态累计答对 ≥5 次且当前批次全部掌握后，依次解锁「可能・意向・命令・条件」与「受身・使役・使役受身」
+- **训练回合**：每回合 10 题、组合空间洗牌不重复、HUD 实时显示题数／用时／正确数、结果页统计正确率与平均每题用时
+- **学习教程**：内置动词三分类讲解、12 形态活用速查表（示例由活用引擎实时计算）与配套视频
+- **词库 597 词**：覆盖 JLPT N5–N1，汉字上方自动标注振假名
+- **学习统计**：总体进度、分形态正确率、弱项动词 Top5、最近成绩、火花连胜（连续学习天数）
+- **本地持久化**：进度存储于 localStorage（key：`bnmb-progress`），支持导出／导入 JSON 备份与清除数据；存档损坏或版本不兼容时自动降级为默认数据，不会白屏
 
 ## 平台
 
-- **Web 版**: 当前仓库，基于 React + TypeScript + Vite，部署于 GitHub Pages
-- **Android 版**: [kenaut/BNMB-android](https://github.com/kenaut/BNMB-android)
+- **Web 版**：当前仓库，基于 React + TypeScript + Vite，部署于 GitHub Pages
+- **Android 版**：[kenaut/BNMB-android](https://github.com/kenaut/BNMB-android)
+
+## 技术栈
+
+- React 18 + TypeScript + Vite，零运行时第三方依赖
+- Vitest 单元测试（129 个用例，覆盖活用引擎、振假名、出题、会话、持久化、连胜等）
+- GitHub Actions 自动部署至 GitHub Pages
+
+## 本地开发
+
+```bash
+npm install
+npm run dev      # 启动开发服务器
+npm test         # 运行全部单元测试
+npm run build    # 类型检查并构建生产版本（输出 dist/）
+```
+
+## 词库维护
+
+动词统一存放于 [`src/data/verbs.json`](src/data/verbs.json)，一行一个动词：
+
+```json
+{ "id": "kaku", "kanji": "書く", "kana": "かく", "meaning": "写", "type": "godan", "level": "N5" }
+```
+
+`type` 取值为 `godan`（五段）／`ichidan`（一段）／`suru`（サ变）／`kuru`（カ变）。新增动词直接追加到 `verbs` 数组后运行 `npm test`，数据完整性测试会自动校验 id 唯一性、类型与词尾自洽、送假名对齐以及全部 12 种形态可正确活用。
+
+## License
+
+MIT
