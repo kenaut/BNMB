@@ -2,7 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { verbs } from "../data/verbs";
 import { createQuestions, type Question } from "../quiz/quiz";
 import { loadProgress, saveProgress } from "../storage/persistence";
-import { getUnlockedForms } from "./mastery";
+import { getAvailableForms } from "./mastery";
 import { applySessionResult } from "./progressUpdate";
 import {
   answerSession,
@@ -82,9 +82,9 @@ export function useTrainingSession(): TrainingSession {
 
   const begin = (total: number) => {
     totalRef.current = total;
-    // 全部动词可用，活用形态按批解锁（首批 ます/ない/て/た）；
-    // 只从已解锁形态中出题，全组合洗牌后取前 N，回合内组合不重复
-    const forms = getUnlockedForms(loadProgress());
+    // 出题范围按练习模式：自由模式全部形态 / 闯关模式按批解锁；
+    // 全组合洗牌后取前 N，回合内组合不重复
+    const forms = getAvailableForms(loadProgress());
     setQuestions(createQuestions(total, verbs, forms));
     dispatch({ type: "start", total, now: Date.now() });
   };

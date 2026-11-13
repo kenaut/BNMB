@@ -2,14 +2,14 @@ import { useState } from "react";
 import { verbs } from "../data/verbs";
 import { createQuestion, type Question } from "../quiz/quiz";
 import { loadProgress } from "../storage/persistence";
-import { getUnlockedForms } from "../training/mastery";
+import { getAvailableForms } from "../training/mastery";
 import QuestionCard from "./QuestionCard";
 
-/** 自由练习：全部动词 + 已解锁形态，混合题型与方向 */
+/** 自由练习：全部动词 + 按练习模式开放的形态，混合题型与方向 */
 function nextQuestion(): Question {
   return createQuestion(
     verbs,
-    getUnlockedForms(loadProgress()),
+    getAvailableForms(loadProgress()),
     Math.random,
     Math.random() < 0.5 ? "choice" : "input",
     Math.random() < 0.5 ? "reverse" : "forward",

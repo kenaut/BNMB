@@ -2,11 +2,11 @@ import { FORM_LABELS } from "../domain/conjugate";
 import { verbs } from "../data/verbs";
 import { loadProgress } from "../storage/persistence";
 import {
-  allFormsUnlocked,
   countMasteredForms,
   FORM_BATCHES,
-  getUnlockedForms,
+  getAvailableForms,
   unmasteredInCurrentBatch,
+  allFormsUnlocked,
 } from "../training/mastery";
 
 interface HomeScreenProps {
@@ -19,7 +19,8 @@ interface HomeScreenProps {
 export default function HomeScreen({ total, onStart, onFreePractice }: HomeScreenProps) {
   const progress = loadProgress();
   const totalForms = FORM_BATCHES.flat().length;
-  const unlockedForms = getUnlockedForms(progress);
+  const isFree = progress.practiceMode === "free";
+  const availableForms = getAvailableForms(progress);
   const mastered = countMasteredForms(progress);
   const remaining = unmasteredInCurrentBatch(progress);
 
@@ -40,12 +41,16 @@ export default function HomeScreen({ total, onStart, onFreePractice }: HomeScree
         每回合 {total} 题，随机考查动词与活用形态，即时判分并统计用时。
       </p>
       <p style={{ fontSize: 14, color: "#57606a", marginBottom: 4 }}>
-        已解锁形态：{unlockedForms.map((f) => FORM_LABELS[f]).join("・")}
+        {isFree ? "可练习形态（自由模式）：" : "已解锁形态："}
+        {availableForms.map((f) => FORM_LABELS[f]).join("・")}
       </p>
       <p style={{ fontSize: 14, color: "#57606a", marginBottom: 28 }}>
         已掌握 {mastered} / {totalForms} 种形态
-        {!allFormsUnlocked(progress) && remaining > 0 && `（再掌握 ${remaining} 种解锁下一批）`}
-        {allFormsUnlocked(progress) && "（全部形态已解锁）"}
+        {isFree
+          ? "（自由模式：全部形态开放练习）"
+          : !allFormsUnlocked(progress) && remaining > 0
+            ? `（再掌握 ${remaining} 种解锁下一批）`
+            : "（全部形态已解锁）"}
       </p>
       <button onClick={onStart} className="btn-primary" style={{ fontSize: 20, padding: "12px 48px" }}>
         开始训练
