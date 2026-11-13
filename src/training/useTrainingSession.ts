@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from "react";
+import type { ConjugatableFormId } from "../domain/conjugate";
 import { verbs } from "../data/verbs";
 import { createQuestions, type Question } from "../quiz/quiz";
 import { loadProgress, saveProgress } from "../storage/persistence";
@@ -45,7 +46,8 @@ export interface TrainingSession {
   currentQuestion: Question | null;
   /** 已用毫秒（由时间戳计算，组件按此渲染） */
   elapsedMs: number;
-  start: (total?: number) => void;
+  /** 开始一局；forms 传入自选变形范围（空/不传 = 按练习模式默认） */
+  start: (total?: number, forms?: ConjugatableFormId[]) => void;
   answer: (isCorrect: boolean) => void;
   next: () => void;
   restart: () => void;
@@ -63,6 +65,8 @@ export function useTrainingSession(): TrainingSession {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [now, setNow] = useState(() => Date.now());
   const totalRef = useRef(DEFAULT_QUESTION_COUNT);
+  /** 自选变形范围（null = 按练习模式默认）；「再来一局」沿用同一范围 */
+  const formsRef = useRef<ConjugatableFormId[] | null>(null);
   const savedResultAtRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -80,12 +84,13 @@ export function useTrainingSession(): TrainingSession {
     saveProgress(applySessionResult(loadProgress(), result));
   }, [state]);
 
-  const begin = (total: number) => {
+  const begin = (total: number, forms?: ConjugatableFormId[]) => {
     totalRef.current = total;
-    // 出题范围按练习模式：自由模式全部形态 / 闯关模式按批解锁；
+    // 出题范围：自选变形优先，否则按练习模式（自由=全部 / 闯关=按批解锁）；
     // 全组合洗牌后取前 N，回合内组合不重复
-    const forms = getAvailableForms(loadProgress());
-    setQuestions(createQuestions(total, verbs, forms));
+    formsRef.current = forms && forms.length > 0 ? forms : null;
+    const scope = formsRef.current ?? getAvailableForms(loadProgress());
+    setQuestions(createQuestions(total, verbs, scope));
     dispatch({ type: "start", total, now: Date.now() });
   };
 
@@ -96,7 +101,7 @@ export function useTrainingSession(): TrainingSession {
     questions,
     currentQuestion,
     elapsedMs: getElapsedMs(state, now),
-    start: (total = DEFAULT_QUESTION_COUNT) => begin(total),
+    start: (total = DEFAULT_QUESTION_COUNT, forms?: ConjugatableFormId[]) => begin(total, forms),
     answer: (isCorrect) =>
       dispatch({
         type: "answer",
@@ -107,7 +112,7 @@ export function useTrainingSession(): TrainingSession {
           : undefined,
       }),
     next: () => dispatch({ type: "continue" }),
-    restart: () => begin(totalRef.current),
+    restart: () => begin(totalRef.current, formsRef.current ?? undefined),
     home: () => dispatch({ type: "reset" }),
   };
 }
