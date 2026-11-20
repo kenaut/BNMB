@@ -42,11 +42,7 @@ export default function App() {
 
       {tab === "home" && <Training />}
       {tab === "learn" && <LearnScreen />}
-      {tab === "table" && (
-        <div className="table-scroll">
-          <VerbTable />
-        </div>
-      )}
+      {tab === "table" && <VerbTable />}
       {tab === "settings" && <SettingsScreen />}
 
       {mode === undefined && <ModeSelectModal onChoose={chooseMode} />}
